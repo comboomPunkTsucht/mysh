@@ -1,3 +1,5 @@
+build/
+
 # Prerequisites
 *.d
 
@@ -50,3 +52,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Nob (Nobuild)
+nob
+nob.old
