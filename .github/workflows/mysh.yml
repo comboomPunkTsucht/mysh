@@ -13,21 +13,30 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - name: Install Dependencies
       run: sudo apt update && sudo apt install -y libreadline-dev
+
     - name: Build nob
       run: cc -o nob nob.c
+
     - name: Build mysh
       run: ./nob
+
     - name: Get Version
       id: get_version
-      run: echo "VERSION=$(./build/mysh -v | awk '{print $3}')" >> $GITHUB_ENV
+      run: |
+        VERSION=$(./build/mysh -v | awk '{print $3}')
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
     - name: Print Version
-      run: echo "Detected version: $VERSION"
+      run: echo "Detected version: ${{ env.VERSION }}"
 
     - name: Upload Release
-      if: github.event_name == 'push' # Nur bei Pushes auf "main"
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release create "$VERSION" ./build/mysh --title "mysh $VERSION" --notes "Release for mysh $VERSION"
+        gh release create "v${{ env.VERSION }}" ./build/mysh \
+          --title "mysh ${{ env.VERSION }}" \
+          --notes "Release for mysh version ${{ env.VERSION }}"
