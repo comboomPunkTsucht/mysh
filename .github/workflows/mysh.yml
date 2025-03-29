@@ -20,8 +20,7 @@ jobs:
     - name: build mysh
       run: ./nob
     - name: get-version
-      run: |
-        sudo touch /temp/version.txt
-        ./mysh -v > /temp/version.txt
+      run:
+        TEMP_VERSION=$(./mysh -v)
     - name: print-version
-      run: cat /temp/version.txt
+      run: echo TEMP_VERSION
