@@ -16,6 +16,19 @@
 #define LIB_FOLDER "./lib"
 #define PROGRAMM_NAME "mysh"
 
+void usage(FILE *stream)
+{
+  fprintf(stream, "nob - v1.19.0 - Public Domain - https://github.com/tsoding/nob.h\n");
+  fprintf(stream, "This library is the next generation of the [NoBuild](https://github.com/tsoding/nobuild) idea.\n");
+  fprintf(stream, "Usage: ./nob [OPTIONS] [--]\n");
+  fprintf(stream, "OPTIONS:\n");
+  flag_print_options(stream);
+}
+
+void versionp(FILE *stream)
+{
+  fprintf(stream, "nob v1.19.0\n");
+}
 
 int main(int argc, char **argv)
 {
@@ -27,10 +40,26 @@ int main(int argc, char **argv)
   NOB_GO_REBUILD_URSELF(argc, argv);
 
   char **target = flag_str("-target", NULL, "sets the target for the build");
+  bool *help = flag_bool("-help", false, "Print this help");
+  bool *help2 = flag_bool("h", false, "Print this help");
+  bool *version = flag_bool("-version", false, "Print the version of nob.h");
+  bool *version2 = flag_bool("v", false, "Print the version of nob.h");
   if (!flag_parse(flag_argc, flag_argv))
   {
+    usage(stdout);
     flag_print_error(stderr);
     exit(1);
+  }
+
+  if (*help || *help2)
+  {
+    usage(stdout);
+    exit(0);
+  }
+  if (*version || *version2)
+  {
+    versionp(stdout);
+    exit(0);
   }
 
   // It's better to keep all the building artifacts in a separate build folder. Let's create it if it

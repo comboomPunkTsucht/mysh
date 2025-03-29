@@ -72,6 +72,11 @@ void process_input(const char *line)
 
 void usage(FILE *stream)
 {
+  fprintf(stream, "mysh - A simple shell\n");
+  fprintf(stream, "Copyright (c) 2025 mahd\n");
+  fprintf(stream, "This software is released under the MIT License.\n");
+  fprintf(stream, "https://opensource.org/licenses/MIT\n");
+  fprintf(stream, "\n");
   fprintf(stream, "Usage: ./mysh [OPTIONS] [--] [INPUT FILE]\n");
   fprintf(stream, "OPTIONS:\n");
   flag_print_options(stream);
