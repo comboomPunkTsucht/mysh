@@ -13,10 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: add dependecies
-      uses: ConorMacBride/install-package@v1.1.0
-      with:
-        apt: libreadline-dev
+    - name: Install Dependencies
+      run: sudo apt update && sudo apt install -y libreadline-dev
     - name: build nob
       run: cc -o nob nob.c
     - name: build mysh
