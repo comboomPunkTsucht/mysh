@@ -73,27 +73,10 @@ jobs:
     - name: Download all artifacts
       uses: actions/download-artifact@v4
 
-    - name: Check if Release Exists
-      id: check_release
+    - name: Create GitHub Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        if gh release view "v${VERSION}" &>/dev/null; then
-          echo "EXISTS=true" >> $GITHUB_ENV
-        else
-          echo "EXISTS=false" >> $GITHUB_ENV
-        fi
-
-    - name: Create or Update GitHub Release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        if [ "$EXISTS" == "true" ]; then
-          echo "Updating existing release..."
-          gh release upload "v${VERSION}" mysh-* --clobber
-        else
-          echo "Creating new release..."
-          gh release create "v${VERSION}" mysh-* \
-            --title "mysh ${VERSION}" \
-            --notes "Release for mysh version ${VERSION}"
-        fi
+        gh release create "v${VERSION}" mysh-* \
+          --title "mysh ${VERSION}" \
+          --notes "Release for mysh version ${VERSION}"
