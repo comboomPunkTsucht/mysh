@@ -27,7 +27,7 @@ void usage(FILE *stream)
 
 void versionp(FILE *stream)
 {
-  fprintf(stream, "nob v1.19.0\n");
+  fprintf(stream, "nob.h v1.19.0\n");
 }
 
 int main(int argc, char **argv)
