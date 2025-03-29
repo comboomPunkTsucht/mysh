@@ -14,7 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: add dependecies
-      run: apt install libreadline
+      uses: ConorMacBride/install-package@v1.1.0
+      with:
+        apt: libreadline
     - name: build nob
       run: cc -o nob nob.c
     - name: build mysh
