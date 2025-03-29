@@ -9,19 +9,39 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        arch: [x86_64, arm64]
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install Dependencies
+    - name: Install Dependencies (Linux)
+      if: runner.os == 'Linux'
       run: sudo apt update && sudo apt install -y libreadline-dev
+
+    - name: Install Dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: brew install readline
+
+    - name: Set up architecture
+      run: |
+        if [ "${{ matrix.arch }}" == "arm64" ]; then
+          export ARCH_FLAGS="-target aarch64-apple-darwin"
+        else
+          export ARCH_FLAGS=""
+        fi
+        echo "ARCH_FLAGS=$ARCH_FLAGS" >> $GITHUB_ENV
 
     - name: Build nob
       run: cc -o nob nob.c
 
     - name: Build mysh
-      run: ./nob
+      run: |
+        mkdir -p build
+        cc -Wall -Wextra -Wformat -lreadline -I ./lib $ARCH_FLAGS -o build/mysh src/main.c
 
     - name: Get Version
       id: get_version
@@ -29,15 +49,53 @@ jobs:
         VERSION=$(./build/mysh -v | awk '{print $3}')
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-    - name: Print Version
+    - name: Rename Binary for Release
       run: |
-        echo "Detected version: ${VERSION}"
+        if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+          OS="linux"
+        else
+          OS="macos"
+        fi
+        mv build/mysh build/mysh-${OS}-${{ matrix.arch }}
 
-    - name: Upload Release
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: mysh-${{ matrix.os }}-${{ matrix.arch }}
+        path: build/mysh-${{ matrix.os }}-${{ matrix.arch }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Check if Release Exists
+      id: check_release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release create "v${VERSION}" ./build/mysh \
-          --title "mysh ${VERSION}" \
-          --notes "Release for mysh version ${VERSION}"
+        if gh release view "v${VERSION}" &>/dev/null; then
+          echo "EXISTS=true" >> $GITHUB_ENV
+        else
+          echo "EXISTS=false" >> $GITHUB_ENV
+        fi
+
+    - name: Create or Update GitHub Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if [ "$EXISTS" == "true" ]; then
+          echo "Updating existing release..."
+          gh release upload "v${VERSION}" mysh-* --clobber
+        else
+          echo "Creating new release..."
+          gh release create "v${VERSION}" mysh-* \
+            --title "mysh ${VERSION}" \
+            --notes "Release for mysh version ${VERSION}"
+        fi
