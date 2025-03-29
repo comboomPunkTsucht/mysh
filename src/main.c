@@ -88,7 +88,7 @@ void versionp(FILE *stream)
 
 int main(int argc, char *argv[]) {
   char *help_discription = "Display this help message.";
-  char *version_discription = "Print the version of nob.h";
+  char *version_discription = "Print the version of mysh";
   bool *help = flag_bool("-help", false, help_discription);
   bool *help2 = flag_bool("h", false, help_discription);
   bool *version = flag_bool("-version", false, version_discription);
