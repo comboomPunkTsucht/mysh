@@ -34,7 +34,7 @@ int main(int argc, char **argv)
   // The working horse of nob is the Nob_Cmd structure. It's a Dynamic Array of strings which represent
   // command line that you want to execute.
   Cmd cmd = {0};
-  cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-Wformat", "-lreadline", "-I", LIB_FOLDER, "-o", BUILD_FOLDER PROGRAMM_NAME, SRC_FOLDER "main.c");
+  cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-Wformat", "-I", LIB_FOLDER, "-o", BUILD_FOLDER PROGRAMM_NAME, SRC_FOLDER "main.c", "-lreadline");
   // nob_cmd_run_sync_and_reset() resets the cmd for you automatically
   if (!cmd_run_sync_and_reset(&cmd)) return 1;
 
