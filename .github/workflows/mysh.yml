@@ -21,6 +21,6 @@ jobs:
       run: ./nob
     - name: get-version
       run:
-        TEMP_VERSION=$(./mysh -v)
+        TEMP_VERSION=$(./build/mysh -v)
     - name: print-version
       run: echo TEMP_VERSION
