@@ -19,3 +19,7 @@ jobs:
       run: cc -o nob nob.c
     - name: build mysh
       run: ./nob
+    - name: get-version
+      run: ./mysh -v > /temp/version.txt
+    - name: print-version
+      run: cat /temp/version.txt
