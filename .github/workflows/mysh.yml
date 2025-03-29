@@ -16,7 +16,7 @@ jobs:
     - name: add dependecies
       uses: ConorMacBride/install-package@v1.1.0
       with:
-        apt: libreadline
+        apt: lib32readline8 lib32readline-dev lib64readline8 lib64readline-dev
     - name: build nob
       run: cc -o nob nob.c
     - name: build mysh
