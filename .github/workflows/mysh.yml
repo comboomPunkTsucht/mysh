@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch: # Manuelles Triggern
+  workflow_dispatch:
 
 jobs:
   build:
@@ -30,13 +30,14 @@ jobs:
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Print Version
-      run: echo "Detected version: ${{ env.VERSION }}"
+      run: |
+        echo "Detected version: ${VERSION}"
 
     - name: Upload Release
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release create "v${{ env.VERSION }}" ./build/mysh \
-          --title "mysh ${{ env.VERSION }}" \
-          --notes "Release for mysh version ${{ env.VERSION }}"
+        gh release create "v${VERSION}" ./build/mysh \
+          --title "mysh ${VERSION}" \
+          --notes "Release for mysh version ${VERSION}"
