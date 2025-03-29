@@ -39,9 +39,7 @@ jobs:
       run: cc -o nob nob.c
 
     - name: Build mysh
-      run: |
-        mkdir -p build
-        cc -Wall -Wextra -Wformat -lreadline -I ./lib $ARCH_FLAGS -o build/mysh src/main.c
+      run: ./nob
 
     - name: Get Version
       id: get_version
