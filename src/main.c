@@ -87,10 +87,12 @@ void versionp(FILE *stream)
 }
 
 int main(int argc, char *argv[]) {
-  bool *help = flag_bool("-help", false, "Print this help");
-  bool *help2 = flag_bool("h", false, "Print this help");
-  bool *version = flag_bool("-version", false, "Print version");
-  bool *version2 = flag_bool("v", false, "Print version");
+  char *help_discription = "Display this help message.";
+  char *version_discription = "Print the version of nob.h";
+  bool *help = flag_bool("-help", false, help_discription);
+  bool *help2 = flag_bool("h", false, help_discription);
+  bool *version = flag_bool("-version", false, version_discription);
+  bool *version2 = flag_bool("v", false, version_discription);
 
   if (!flag_parse(argc, argv))
   {

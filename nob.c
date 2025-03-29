@@ -39,11 +39,14 @@ int main(int argc, char **argv)
   // runs it again.
   NOB_GO_REBUILD_URSELF(argc, argv);
 
+  char *help_discription = "Display this help message.";
+  char *version_discription = "Print the version of nob.h";
+
   char **target = flag_str("-target", NULL, "sets the target for the build");
-  bool *help = flag_bool("-help", false, "Print this help");
-  bool *help2 = flag_bool("h", false, "Print this help");
-  bool *version = flag_bool("-version", false, "Print the version of nob.h");
-  bool *version2 = flag_bool("v", false, "Print the version of nob.h");
+  bool *help = flag_bool("-help", false, help_discription);
+  bool *help2 = flag_bool("h", false, help_discription);
+  bool *version = flag_bool("-version", false, version_discription);
+  bool *version2 = flag_bool("v", false, version_discription);
   if (!flag_parse(flag_argc, flag_argv))
   {
     usage(stdout);
