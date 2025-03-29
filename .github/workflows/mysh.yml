@@ -20,6 +20,8 @@ jobs:
     - name: build mysh
       run: ./nob
     - name: get-version
-      run: touch /temp/version.txt && ./mysh -v > /temp/version.txt
+      run: |
+        sudo touch /temp/version.txt
+        ./mysh -v > /temp/version.txt
     - name: print-version
       run: cat /temp/version.txt
