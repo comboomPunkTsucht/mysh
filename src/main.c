@@ -10,7 +10,8 @@
 #define NOB_IMPLEMENTATION
 #include "nob.h"
 #define FLAG_IMPLEMENTATION
-#include "./flag.h"
+#include "flag.h"
+#include "config.h"
 // Funktionsprototypen
 void handle_exit(char **args);
 void handle_help(char **args);
@@ -154,18 +155,16 @@ void process_input(const char *line)
 
 void usage(FILE *stream)
 {
-  fprintf(stream, "mysh - A simple shell\n");
-  fprintf(stream, "Copyright (c) 2025 mahd\n");
-  fprintf(stream, "This software is released under the MIT License.\n");
-  fprintf(stream, "https://opensource.org/licenses/MIT\n");
-  fprintf(stream, "\n");
-  fprintf(stream, "Usage: ./mysh [OPTIONS] [--] [INPUT FILE]\n");
+  fprintf(stream, "%s - %s\n", PROGRAMM_NAME, PROGRAMM_DESCRIPTION);
+  fprintf(stream, "%s\n", PROGRAMM_LICENSE);
+  fprintf(stream, "%s\n", PROGRAMM_COPYRIGHT);
+  fprintf(stream, "Usage: ./%s [OPTIONS] [--] [INPUT FILE]\n", PROGRAMM_NAME);
   fprintf(stream, "OPTIONS:\n");
   flag_print_options(stream);
 }
 void versionp(FILE *stream)
 {
-  fprintf(stream, "mysh version 0.1.0-alpha\n");
+  fprintf(stream, "%s - %s\n", PROGRAMM_NAME, PROGRAMM_VERSION);
 }
 
 int main(int argc, char *argv[]) {
@@ -204,7 +203,7 @@ int main(int argc, char *argv[]) {
   {
     while (!quit)
     {
-      char *line = readline("mysh> ");
+      char *line = readline(PROGRAMM_NAME"> ");
       if (!line)
         handle_exit(NULL);
       process_input(line);

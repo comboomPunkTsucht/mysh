@@ -6,20 +6,22 @@
  */
 #define NOB_IMPLEMENTATION
 #define NOB_STRIP_PREFIX
+#define IS_NOB_C
 #include "nob.h"
 #define FLAG_IMPLEMENTATION
-#include "./flag.h"
+#include "flag.h"
+#include "config.h"
 
 // Some folder paths that we use throughout the build process.
 #define BUILD_FOLDER "build/"
 #define SRC_FOLDER "src/"
 #define LIB_FOLDER "./lib"
-#define PROGRAMM_NAME "mysh"
+#define CONFIG_FOLDER "./config"
 
 void usage(FILE *stream)
 {
-  fprintf(stream, "nob - v1.19.0 - Public Domain - https://github.com/tsoding/nob.h\n");
-  fprintf(stream, "This library is the next generation of the [NoBuild](https://github.com/tsoding/nobuild) idea.\n");
+  fprintf(stream, "nob - %s - Public Domain - https://github.com/tsoding/nob.h\n", NOB_VERSION, NOB_COPYRIGHT);
+  fprintf(stream, "%s\n", NOB_COPYRIGHT);
   fprintf(stream, "Usage: ./nob [OPTIONS] [--]\n");
   fprintf(stream, "OPTIONS:\n");
   flag_print_options(stream);
@@ -27,7 +29,7 @@ void usage(FILE *stream)
 
 void versionp(FILE *stream)
 {
-  fprintf(stream, "nob.h v1.19.0\n");
+  fprintf(stream, "nob.h %s\n", NOB_VERSION);
 }
 
 int main(int argc, char **argv)
@@ -80,7 +82,7 @@ int main(int argc, char **argv)
   // The working horse of nob is the Nob_Cmd structure. It's a Dynamic Array of strings which represent
   // command line that you want to execute.
   Cmd cmd = {0};
-  cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-Wformat", "-Wincompatible-pointer-types", "-I", LIB_FOLDER);
+  cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-Wformat", "-Wincompatible-pointer-types", "-I", LIB_FOLDER, "-I", CONFIG_FOLDER);
   if (*target)
   {
     char target_flag[128];
