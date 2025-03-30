@@ -12,5 +12,40 @@
 			"bmalehorn.shell-syntax",
 			"ms-vscode.cpptools-extension-pack"
 		]
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Build Nob",
+				"type": "f5anything",
+				"request": "launch",
+				"command": "cc -o ${cwd}/nob ${cwd}/nob.c; exit;",
+				"terminalName": "Build Nob",
+				"terminalIndex": -1,
+				"showTerminal": true,
+				"vscCommand": ""
+			},
+			{
+				"name": "Build mysh",
+				"type": "f5anything",
+				"request": "launch",
+				"command": "${cwd}/nob; exit;",
+				"terminalName": "Run Nob",
+				"terminalIndex": -1,
+				"showTerminal": true,
+				"vscCommand": ""
+			},
+			{
+				"name": "Run mysh",
+				"type": "f5anything",
+				"request": "launch",
+				"command": "${cwd}/build/mysh; exit;",
+				"terminalName": "Run mysh",
+				"terminalIndex": -1,
+				"showTerminal": true,
+				"vscCommand": ""
+			}
+		]
 	}
 }
