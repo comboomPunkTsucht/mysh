@@ -57,4 +57,3 @@ dkms.conf
 nob
 nob.old
 .DS_Store
-*/**/.DS_Store
