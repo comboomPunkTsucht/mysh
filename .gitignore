@@ -56,3 +56,5 @@ dkms.conf
 # Nob (Nobuild)
 nob
 nob.old
+.DS_Store
+*/**/.DS_Store
