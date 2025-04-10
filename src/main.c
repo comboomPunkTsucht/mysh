@@ -155,16 +155,16 @@ void process_input(const char *line)
 
 void usage(FILE *stream)
 {
-  fprintf(stream, "%s - %s\n", PROGRAMM_NAME, PROGRAMM_DESCRIPTION);
+  fprintf(stream, "%s - %s\n", flag_program_name(), PROGRAMM_DESCRIPTION);
   fprintf(stream, "%s\n", PROGRAMM_LICENSE);
   fprintf(stream, "%s\n", PROGRAMM_COPYRIGHT);
-  fprintf(stream, "Usage: ./%s [OPTIONS] [--] [INPUT FILE]\n", PROGRAMM_NAME);
+  fprintf(stream, "Usage: ./%s [OPTIONS] [--] [INPUT FILE]\n", flag_program_name());
   fprintf(stream, "OPTIONS:\n");
   flag_print_options(stream);
 }
 void versionp(FILE *stream)
 {
-  fprintf(stream, "%s - %s\n", PROGRAMM_NAME, PROGRAMM_VERSION);
+  fprintf(stream, "%s - %s\n", flag_program_name(), PROGRAMM_VERSION);
 }
 
 int main(int argc, char *argv[]) {
