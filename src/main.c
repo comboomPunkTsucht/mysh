@@ -12,6 +12,7 @@
 #define FLAG_IMPLEMENTATION
 #include "flag.h"
 #include "config.h"
+#include "alexer.h"
 // Funktionsprototypen
 void handle_exit(char **args);
 void handle_help(char **args);
