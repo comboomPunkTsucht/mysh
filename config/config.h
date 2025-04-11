@@ -6,7 +6,7 @@
 #define CONFIG_H
 
 #define PROGRAMM_NAME "mysh"
-#define PROGRAMM_VERSION "0.1.1-alpha"
+#define PROGRAMM_VERSION "0.1.2-alpha"
 #define PROGRAMM_DESCRIPTION "A simple shell written in C"
 #define PROGRAMM_COPYRIGHT "Copyright (c) 2025 mahd"
 #define PROGRAMM_LICENSE "This software is released under the MIT License. https://opensource.org/licenses/MIT"

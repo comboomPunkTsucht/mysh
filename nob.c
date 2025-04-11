@@ -84,6 +84,7 @@ int main(int argc, char **argv)
   Cmd cmd = {0};
   cmd_append(&cmd,
     "cc",
+    "-g",
     "-Wall",
     "-Wextra",
     "-Wformat",

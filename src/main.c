@@ -63,13 +63,11 @@ typedef enum
   KEYWORD_UNSET,
   KEYWORD_SOURCE,
   KEYWORD_PRINT,
-  KEYWORD_PRINTF,
   KEYWORD_PRINTLN,
-  KEYWORD_PRINTFN,
   COUNT_KEYWORDS,
 } Keyword_Index;
 
-static_assert(COUNT_KEYWORDS == 17, "Amount of keywords have changed");
+static_assert(COUNT_KEYWORDS == 15, "Amount of keywords have changed");
 const char *keywords[COUNT_KEYWORDS] = {
     [KEYWORD_IF] = "if",
     [KEYWORD_RETURN] = "return",
@@ -168,6 +166,7 @@ void handle_cd(char *args)
 }
 
 static bool quit = false;
+Nob_Cmd cmd_extern = {0};
 void process_input(const char *line, const char *file_path)
 {
   if (!line || !*line)
@@ -185,7 +184,8 @@ void process_input(const char *line, const char *file_path)
   l.sl_comments_count = ALEXER_ARRAY_LEN(sl_comments);
   l.ml_comments = ml_comments;
   l.ml_comments_count = ALEXER_ARRAY_LEN(ml_comments);
-  Alexer_Token t;
+
+  Alexer_Token t = {0};
   while (alexer_get_token(&l, &t))
   {
     switch (ALEXER_KIND(t.id))
@@ -277,7 +277,6 @@ void process_input(const char *line, const char *file_path)
       // End of input
       return;
     default:
-      Nob_Cmd cmd_extern = {0};
       char *token_extern = nob_temp_sprintf("%.*s", (int)(t.end - t.begin), t.begin);
       nob_cmd_append(&cmd_extern, token_extern);
       while (alexer_get_token(&l, &t))
@@ -286,9 +285,9 @@ void process_input(const char *line, const char *file_path)
         nob_cmd_append(&cmd_extern, args_extern);
       }
 
-      if (!nob_cmd_run_sync_and_reset(&cmd_extern))
-        printf("Unknown command: %s\n", line);
-      break;
+      if (!nob_cmd_run_sync_and_reset(&cmd_extern)) {
+        return;
+      }
     }
   }
   return;
@@ -317,6 +316,16 @@ int main(int argc, char **argv)
   bool *version = flag_bool("-version", false, version_discription);
   bool *version2 = flag_bool("v", false, version_discription);
   Nob_String_Builder sb = {0};
+  Nob_String_Builder sb_user_config = {0};
+  char *home = getenv("HOME");
+  char *user_config_file_path = nob_temp_sprintf("%s/.myshrc", home);
+  if (!nob_read_entire_file(user_config_file_path, &sb_user_config))
+  {
+    nob_write_entire_file(user_config_file_path, "#!/usr/bin/env mysh\n#user config\n", 19);
+    nob_read_entire_file(user_config_file_path, &sb_user_config);
+  }
+  process_input(sb_user_config.items, user_config_file_path);
+  nob_sb_free(sb_user_config); // Sicherstellen, dass der Speicher freigegeben wird
 
   if (!flag_parse(argc, argv))
   {
@@ -351,7 +360,7 @@ int main(int argc, char **argv)
       {
         handle_exit();
       }
-      process_input(line, NULL);
+      process_input(line,"/dev/null");
       free(line);
     }
     nob_sb_free(sb);

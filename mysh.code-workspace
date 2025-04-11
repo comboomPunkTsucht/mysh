@@ -45,7 +45,18 @@
 				"terminalIndex": -1,
 				"showTerminal": true,
 				"vscCommand": ""
-			}
+			},
+			{
+        "name": "Launch (lldb) mysh",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${cwd}/build/mysh",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": false
+    }
 		]
 	}
 }
