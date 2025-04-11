@@ -127,7 +127,29 @@ void handle_cd(char *args)
 {
   static char previous_dir[PATH_MAX] = "";
 
-  // Aktuelles Arbeitsverzeichnis speichern
+  if (!args || strcmp(args, "~") == 0)
+  {
+    // Home-Verzeichnis
+    char *home = getenv("HOME");
+    if (!home)
+    {
+      fprintf(stderr, "cd: HOME not set\n");
+      return;
+    }
+    args = home;
+  }
+  else if (strcmp(args, "-") == 0)
+  {
+    // Vorheriges Verzeichnis
+    if (!previous_dir[0])
+    {
+      fprintf(stderr, "cd: no previous directory\n");
+      return;
+    }
+    args = previous_dir;
+  }
+
+  // Aktuelles Verzeichnis speichern
   char cwd[PATH_MAX];
   if (!getcwd(cwd, sizeof(cwd)))
   {
@@ -135,31 +157,7 @@ void handle_cd(char *args)
     return;
   }
 
-  // Zielverzeichnis bestimmen
-  const char *target_dir = args;
-  if (!target_dir || strcmp(target_dir, "~") == 0)
-  {
-    // Home-Verzeichnis verwenden
-    target_dir = getenv("HOME");
-    if (!target_dir)
-    {
-      fprintf(stderr, "cd: HOME not set\n");
-      return;
-    }
-  }
-  else if (strcmp(target_dir, "-") == 0)
-  {
-    // Vorheriges Verzeichnis verwenden
-    if (!previous_dir[0])
-    {
-      fprintf(stderr, "cd: no previous directory\n");
-      return;
-    }
-    target_dir = previous_dir;
-  }
-
-  // Verzeichnis wechseln
-  if (chdir(target_dir) != 0)
+  if (chdir(args) != 0)
   {
     perror("cd");
     return;
