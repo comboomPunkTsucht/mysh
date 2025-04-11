@@ -174,27 +174,9 @@ void process_input(const char *line, const char *file_path)
     return;
 
   add_history(line);
-  // 2. Für externe Kommandos
-  Nob_Cmd cmd_extern = {0};                // Command extern (dynamic Array)
-  char *temp = strdup(line);   // copy of the line
-  char *temp2 = strdup(line);   // copy of the line
-  if (!temp)
-  {
-    nob_log(NOB_ERROR, "Memory allocation failed\n");
-    return;
-  }
-  char *token = strtok(temp, " ");
-  while (token != NULL)
-  {
-    // Append each token to the command
-    nob_log(NOB_INFO, "Token: %s\n", token);
-    nob_cmd_append(&cmd_extern, strdup(token));
-
-    token = strtok(NULL, " ");
-  }
-  free(temp); // Free the copy of the line
+  // 2. Für externe Kommandos              // Command extern (dynamic Array)
 //----------------------------------------------------------------------------------------------
-  Alexer l = alexer_create(file_path, temp2, strlen(temp2));
+  Alexer l = alexer_create(file_path, line, strlen(line));
   l.puncts = puncts;
   l.puncts_count = ALEXER_ARRAY_LEN(puncts);
   l.keywords = keywords;
@@ -295,6 +277,15 @@ void process_input(const char *line, const char *file_path)
       // End of input
       return;
     default:
+      Nob_Cmd cmd_extern = {0};
+      char *token_extern = nob_temp_sprintf("%.*s", (int)(t.end - t.begin), t.begin);
+      nob_cmd_append(&cmd_extern, token_extern);
+      while (alexer_get_token(&l, &t))
+      {
+        char *args_extern = nob_temp_sprintf("%.*s", (int)(t.end - t.begin), t.begin);
+        nob_cmd_append(&cmd_extern, args_extern);
+      }
+
       if (!nob_cmd_run_sync_and_reset(&cmd_extern))
         printf("Unknown command: %s\n", line);
       break;
