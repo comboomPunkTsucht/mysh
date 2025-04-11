@@ -20,6 +20,12 @@ void handle_help(char **args);
 void handle_hello(char **args);
 void handle_cd(char **args);
 
+void handle_echo_print(char **args) { printf("%s", *args); }
+void handle_println(char **args) { printf("%s\n", *args); }
+void handle_printf(char **args) { printf("%s", *args); }
+void handle_printfn(char **args) { printf("%s\n", *args); }
+
+
 typedef enum
 {
   PUNCT_PLUS,
@@ -68,10 +74,12 @@ typedef enum
   KEYWORD_SOURCE,
   KEYWORD_PRINT,
   KEYWORD_PRINTF,
+  KEYWORD_PRINTLN,
+  KEYWORD_PRINTFN,
   COUNT_KEYWORDS,
 } Keyword_Index;
 
-static_assert(COUNT_KEYWORDS == 15, "Amount of keywords have changed");
+static_assert(COUNT_KEYWORDS == 17, "Amount of keywords have changed");
 const char *keywords[COUNT_KEYWORDS] = {
     [KEYWORD_IF] = "if",
     [KEYWORD_RETURN] = "return",
@@ -88,6 +96,8 @@ const char *keywords[COUNT_KEYWORDS] = {
     [KEYWORD_SOURCE] = "source",
     [KEYWORD_PRINT] = "print",
     [KEYWORD_PRINTF] = "printf",
+    [KEYWORD_PRINTLN] = "println",
+    [KEYWORD_PRINTFN] = "printfn",
 };
 
 const char *sl_comments[] = {
