@@ -316,16 +316,7 @@ int main(int argc, char **argv)
   bool *version = flag_bool("-version", false, version_discription);
   bool *version2 = flag_bool("v", false, version_discription);
   Nob_String_Builder sb = {0};
-  Nob_String_Builder sb_user_config = {0};
-  char *home = getenv("HOME");
-  char *user_config_file_path = nob_temp_sprintf("%s/.myshrc", home);
-  if (!nob_read_entire_file(user_config_file_path, &sb_user_config))
-  {
-    nob_write_entire_file(user_config_file_path, "#!/usr/bin/env mysh\n#user config\n", 19);
-    nob_read_entire_file(user_config_file_path, &sb_user_config);
-  }
-  process_input(sb_user_config.items, user_config_file_path);
-  nob_sb_free(sb_user_config); // Sicherstellen, dass der Speicher freigegeben wird
+
 
   if (!flag_parse(argc, argv))
   {
@@ -348,6 +339,17 @@ int main(int argc, char **argv)
   int rest_argc = flag_rest_argc();
   char **rest_argv = flag_rest_argv();
   NOB_UNUSED(rest_argv);
+
+  Nob_String_Builder sb_user_config = {0};
+  char *home = getenv("HOME");
+  char *user_config_file_path = nob_temp_sprintf("%s/.myshrc", home);
+  if (!nob_read_entire_file(user_config_file_path, &sb_user_config))
+  {
+    nob_write_entire_file(user_config_file_path, "#!/usr/bin/env mysh\n#user config\n", 19);
+    nob_read_entire_file(user_config_file_path, &sb_user_config);
+  }
+  process_input(sb_user_config.items, user_config_file_path);
+  nob_sb_free(sb_user_config); // Sicherstellen, dass der Speicher freigegeben wird
 
   if (rest_argc <= 0)
   {
