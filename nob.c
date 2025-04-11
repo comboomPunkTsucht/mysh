@@ -20,7 +20,7 @@
 
 void usage(FILE *stream)
 {
-  fprintf(stream, "nob - %s - Public Domain - https://github.com/tsoding/nob.h\n", NOB_VERSION, NOB_COPYRIGHT);
+  fprintf(stream, "nob - %s - %s\n", NOB_VERSION, NOB_COPYRIGHT);
   fprintf(stream, "%s\n", NOB_COPYRIGHT);
   fprintf(stream, "Usage: ./nob [OPTIONS] [--]\n");
   fprintf(stream, "OPTIONS:\n");
@@ -87,7 +87,6 @@ int main(int argc, char **argv)
     "-Wall",
     "-Wextra",
     "-Wformat",
-    "-Wincompatible-pointer-types",
     "-I", LIB_FOLDER,
     "-I", CONFIG_FOLDER
   );

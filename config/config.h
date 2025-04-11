@@ -14,7 +14,7 @@
 #ifdef IS_NOB_C
 
 #define NOB_VERSION "1.19.0"
-#define NOB_COPYRIGHT "Copyright (c) 2025 tsoding"
+#define NOB_COPYRIGHT "Public Domain - https://github.com/tsoding/nob.h"
 
 #endif // IS_NOB_C
 

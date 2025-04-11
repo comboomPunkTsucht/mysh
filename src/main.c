@@ -174,7 +174,10 @@ void process_input(const char *line, const char *file_path)
     return;
 
   add_history(line);
-
+  Nob_Cmd cmd_extern = {0};                // Command extern (dynamic Array)
+  Cmd_external_args cmd_extern_args = {0}; // Command extern args (dynamic Array)
+  char *temp = strdup(line);               // copy of the line
+  char *token = strtok(temp, " ");
   Alexer l = alexer_create(file_path, line, strlen(line));
   l.puncts = puncts;
   l.puncts_count = ALEXER_ARRAY_LEN(puncts);
@@ -274,31 +277,35 @@ void process_input(const char *line, const char *file_path)
       }
       break;
     }
+    case ALEXER_END:
+      // End of input
+      return;
     default:
-      // 2. Für externe Kommandos
-      Nob_Cmd cmd_extern = {0};                // Command extern (dynamic Array)
-      Cmd_external_args cmd_extern_args = {0}; // Command extern args (dynamic Array)
-      char *temp = strdup(line);               // copy of the line
-      char *token = strtok(temp, " ");
       while (token != NULL)
       {
-        // Append each token to the command
-        nob_da_append(&cmd_extern_args, strdup(token));
+        nob_da_append(&cmd_extern_args, strdup(token)); // Argument hinzufügen
         token = strtok(NULL, " ");
       }
-      free(temp); // Free the copy of the line
-      nob_da_foreach(const char **, token_ptr, &cmd_extern_args)
-      {
-        nob_cmd_append(&cmd_extern, *token_ptr); // Dereferenzieren des char**
-      }
-      nob_da_free(cmd_extern_args); // Free the command arguments
+      free(temp); // Kopie der Eingabe freigeben
+
+      // Null-Terminierung der Argumentliste
+      nob_da_append(&cmd_extern_args, NULL);
+
+      // Übergabe an execvp
       if (!nob_cmd_run_sync_and_reset(&cmd_extern))
-        printf("Unknown command: %s\n", line);
-      break;
-      printf("Unknown command: %.*s\n", (int)(t.end - t.begin), t.begin);
-      break;
-    }
+      {
+        fprintf(stderr, "Unknown command: %s\n", line);
+      }
+
+      // Speicher freigeben
+      nob_da_foreach(char *, arg, &cmd_extern_args)
+      {
+        free(arg);
+      }
+      nob_da_free(cmd_extern_args);
       return;
+    }
+    return;
     }
   }
 
