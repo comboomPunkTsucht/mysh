@@ -82,7 +82,16 @@ int main(int argc, char **argv)
   // The working horse of nob is the Nob_Cmd structure. It's a Dynamic Array of strings which represent
   // command line that you want to execute.
   Cmd cmd = {0};
-  cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-Wformat", "-Wincompatible-pointer-types", "-I", LIB_FOLDER, "-I", CONFIG_FOLDER);
+  cmd_append(&cmd,
+    "cc",
+    "-Wall",
+    "-Wextra",
+    "-Wformat",
+    "-fsanitize=address",
+    "-Wincompatible-pointer-types",
+    "-I", LIB_FOLDER,
+    "-I", CONFIG_FOLDER
+  );
   if (*target)
   {
     char target_flag[128];

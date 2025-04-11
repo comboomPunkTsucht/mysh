@@ -15,15 +15,7 @@
 #define ALEXER_IMPLEMENTATION
 #include "alexer.h"
 // Funktionsprototypen
-void handle_exit(char **args);
-void handle_help(char **args);
-void handle_hello(char **args);
-void handle_cd(char **args);
 
-void handle_echo_print(char **args) { printf("%s", *args); }
-void handle_println(char **args) { printf("%s\n", *args); }
-void handle_printf(char **args) { printf("%s", *args); }
-void handle_printfn(char **args) { printf("%s\n", *args); }
 
 
 typedef enum
@@ -95,9 +87,7 @@ const char *keywords[COUNT_KEYWORDS] = {
     [KEYWORD_UNSET] = "unset",
     [KEYWORD_SOURCE] = "source",
     [KEYWORD_PRINT] = "print",
-    [KEYWORD_PRINTF] = "printf",
     [KEYWORD_PRINTLN] = "println",
-    [KEYWORD_PRINTFN] = "printfn",
 };
 
 const char *sl_comments[] = {
@@ -108,19 +98,6 @@ const char *sl_comments[] = {
 Alexer_ML_Comments ml_comments[] = {
     {"/*", "*/"},
 };
-struct cmd_entry
-{
-  const char *name;
-  void  (*handler)(char **args);
-  const char *description;
-} commands[] = {
-    {"exit", handle_exit, "Exit the shell"},
-    {"quit", handle_exit, "Exit the shell"},
-    {"cd", handle_cd, "Change directory"},
-    {"help", handle_help, "Show this help message"},
-    {"hello", handle_hello, "Print 'Hello, World!'"},
-    {NULL, NULL, NULL} // Terminator
-};
 
 typedef struct {
   char **items;
@@ -128,55 +105,29 @@ typedef struct {
   size_t capacity;
 } Cmd_external_args;
 
-void handle_exit(char **args)
+void handle_exit(void)
 {
-  NOB_UNUSED(args);
   printf("Exiting...\n");
   exit(0);
 }
 
-void handle_hello(char **args)
+void handle_hello(void)
 {
-  NOB_UNUSED(args);
   printf("Hello, World!\n");
 }
 
-void handle_help(char **args)
+void handle_help(void)
 {
-  NOB_UNUSED(args);
-  puts("Available commands:");
-  for (struct cmd_entry *cmd = commands; cmd->name ; cmd++)
-  {
-    printf("%s\t%s\n", cmd->name, cmd->description);
-  }
+    printf("Available commands:\n");
+    for (size_t i = 0; i < sizeof(keywords) / sizeof(keywords[0]); ++i) {
+        printf("- %s\n", keywords[i]);
+    }
 }
-void handle_cd(char **args)
+void handle_cd(char *args)
 {
   static char previous_dir[PATH_MAX] = "";
 
-  if (!args[0] || strcmp(args[0], "~") == 0)
-  {
-    // Home-Verzeichnis
-    char *home = getenv("HOME");
-    if (!home)
-    {
-      fprintf(stderr, "cd: HOME not set\n");
-      return;
-    }
-    args[0] = home;
-  }
-  else if (strcmp(args[0], "-") == 0)
-  {
-    // Vorheriges Verzeichnis
-    if (!previous_dir[0])
-    {
-      fprintf(stderr, "cd: no previous directory\n");
-      return;
-    }
-    args[0] = previous_dir;
-  }
-
-  // Aktuelles Verzeichnis speichern
+  // Aktuelles Arbeitsverzeichnis speichern
   char cwd[PATH_MAX];
   if (!getcwd(cwd, sizeof(cwd)))
   {
@@ -184,7 +135,31 @@ void handle_cd(char **args)
     return;
   }
 
-  if (chdir(args[0]) != 0)
+  // Zielverzeichnis bestimmen
+  const char *target_dir = args;
+  if (!target_dir || strcmp(target_dir, "~") == 0)
+  {
+    // Home-Verzeichnis verwenden
+    target_dir = getenv("HOME");
+    if (!target_dir)
+    {
+      fprintf(stderr, "cd: HOME not set\n");
+      return;
+    }
+  }
+  else if (strcmp(target_dir, "-") == 0)
+  {
+    // Vorheriges Verzeichnis verwenden
+    if (!previous_dir[0])
+    {
+      fprintf(stderr, "cd: no previous directory\n");
+      return;
+    }
+    target_dir = previous_dir;
+  }
+
+  // Verzeichnis wechseln
+  if (chdir(target_dir) != 0)
   {
     perror("cd");
     return;
@@ -193,55 +168,141 @@ void handle_cd(char **args)
   // Vorheriges Verzeichnis aktualisieren
   strcpy(previous_dir, cwd);
 }
+
 static bool quit = false;
-void process_input(const char *line)
+void process_input(const char *line, const char *file_path)
 {
   if (!line || !*line)
     return;
 
   add_history(line);
 
-  // 1. Zuerst interne Kommandos prüfen
-  char *args_line[64] = {0};
-  char *temp = strdup(line); // copy of the line
-  char *token_line = strtok(temp, " ");
-  int arg_count = 0;
-
-  while (token_line != NULL && arg_count < 63)
+  Alexer l = alexer_create(file_path, line, strlen(line));
+  l.puncts = puncts;
+  l.puncts_count = ALEXER_ARRAY_LEN(puncts);
+  l.keywords = keywords;
+  l.keywords_count = ALEXER_ARRAY_LEN(keywords);
+  l.sl_comments = sl_comments;
+  l.sl_comments_count = ALEXER_ARRAY_LEN(sl_comments);
+  l.ml_comments = ml_comments;
+  l.ml_comments_count = ALEXER_ARRAY_LEN(ml_comments);
+  Alexer_Token t;
+  while (alexer_get_token(&l, &t))
   {
-    args_line[arg_count++] = token_line;
-    token_line = strtok(NULL, " ");
-  }
-
-  for (struct cmd_entry *cmd = commands; cmd->name; cmd++)
-  {
-    if (strcmp(args_line[0], cmd->name) == 0)
+    switch (ALEXER_KIND(t.id))
     {
-      cmd->handler(&args_line[1]); // Argumente übergeben
+    case ALEXER_KEYWORD:
+    {
+      switch (ALEXER_INDEX(t.id))
+      {
+      case KEYWORD_EXIT:
+      case KEYWORD_QUIT:
+        handle_exit();
+        break;
+
+      case KEYWORD_HELP:
+        handle_help();
+        break;
+
+      case KEYWORD_HELLO:
+        handle_hello();
+        break;
+
+      case KEYWORD_CD:
+        if (alexer_get_token(&l, &t))
+        {
+          // Prüfen, ob das nächste Token ein String oder Symbol ist
+          if (ALEXER_KIND(t.id) == ALEXER_STRING || ALEXER_KIND(t.id) == ALEXER_SYMBOL)
+          {
+            char *args = nob_temp_sprintf("%.*s", (int)(t.end - t.begin), t.begin);
+            handle_cd(args);
+          }
+          else
+          {
+            fprintf(stderr, "cd: expected string argument\n");
+          }
+        }
+        else
+        {
+          handle_cd(NULL);
+        }
+        break;
+        break;
+      case KEYWORD_ALIAS:
+        break;
+      case KEYWORD_UNALIAS:
+        break;
+      case KEYWORD_ECHO:
+      case KEYWORD_PRINT:
+        if (alexer_get_token(&l, &t))
+        {
+          // Prüfen, ob das nächste Token ein String oder Symbol ist
+          if (ALEXER_KIND(t.id) == ALEXER_STRING || ALEXER_KIND(t.id) == ALEXER_SYMBOL)
+          {
+            printf("%.*s", (int)(t.end - t.begin), t.begin);
+          }
+          else
+          {
+            fprintf(stderr, "echo/print: expected string argument\n");
+          }
+        }
+        else
+        {
+          fprintf(stderr, "echo/print: missing argument\n");
+        }
+        break;
+
+      case KEYWORD_PRINTLN:
+        if (alexer_get_token(&l, &t))
+        {
+          if (ALEXER_KIND(t.id) == ALEXER_STRING || ALEXER_KIND(t.id) == ALEXER_SYMBOL)
+          {
+            printf("%.*s\n", (int)(t.end - t.begin), t.begin);
+          }
+          else
+          {
+            fprintf(stderr, "println: expected string argument\n");
+          }
+        }
+        else
+        {
+          fprintf(stderr, "println: missing argument\n");
+        }
+        break;
+
+      default:
+        nob_log(NOB_INFO, "Unknown keyword: %.*s\n", (int)(t.end - t.begin), t.begin);
+        break;
+      }
+      break;
+    }
+    default:
+      // 2. Für externe Kommandos
+      Nob_Cmd cmd_extern = {0};                // Command extern (dynamic Array)
+      Cmd_external_args cmd_extern_args = {0}; // Command extern args (dynamic Array)
+      char *temp = strdup(line);               // copy of the line
+      char *token = strtok(temp, " ");
+      while (token != NULL)
+      {
+        // Append each token to the command
+        nob_da_append(&cmd_extern_args, strdup(token));
+        token = strtok(NULL, " ");
+      }
+      free(temp); // Free the copy of the line
+      nob_da_foreach(const char **, token_ptr, &cmd_extern_args)
+      {
+        nob_cmd_append(&cmd_extern, *token_ptr); // Dereferenzieren des char**
+      }
+      nob_da_free(cmd_extern_args); // Free the command arguments
+      if (!nob_cmd_run_sync_and_reset(&cmd_extern))
+        printf("Unknown command: %s\n", line);
+      break;
+      printf("Unknown command: %.*s\n", (int)(t.end - t.begin), t.begin);
+      break;
+    }
       return;
     }
   }
-
-  // 2. Für externe Kommandos
-  Nob_Cmd cmd_extern = {0}; // Command extern (dynamic Array)
-  Cmd_external_args cmd_extern_args = {0}; // Command extern args (dynamic Array)
-  temp = strdup(line); // copy of the line
-  char *token = strtok(temp, " ");
-  while (token != NULL)
-  {
-    // Append each token to the command
-    nob_da_append(&cmd_extern_args, strdup(token));
-    token = strtok(NULL, " ");
-  }
-  free(temp); // Free the copy of the line
-  nob_da_foreach(const char **, token_ptr, &cmd_extern_args)
-  {
-    nob_cmd_append(&cmd_extern, *token_ptr); // Dereferenzieren des char**
-  }
-  nob_da_free(cmd_extern_args); // Free the command arguments
-  if (!nob_cmd_run_sync_and_reset(&cmd_extern)) printf("Unknown command: %s\n", line);
-
-}
 
 void usage(FILE *stream)
 {
@@ -300,14 +361,14 @@ int main(int argc, char **argv) {
         char *line = readline(sb.items);
         if (!line)
         {
-          handle_exit(NULL);
+          handle_exit();
 
         }
-        process_input(line);
+        process_input(line, NULL);
         free(line);
       }
       nob_sb_free(sb);
-      handle_exit(NULL);
+      handle_exit();
     }
     else
     {
@@ -320,9 +381,9 @@ int main(int argc, char **argv) {
         nob_sb_free(sb); // Sicherstellen, dass der Speicher freigegeben wird
         return 1;        // Fehlercode zurückgeben
       }
-      printf("Dateiinhalt:\n%s\n", sb.items);
+      process_input(sb.items, file_path);
       nob_sb_free(sb);
-      handle_exit(NULL);
+      exit(0);
     }
   NOB_UNREACHABLE("main");
   return 0;
