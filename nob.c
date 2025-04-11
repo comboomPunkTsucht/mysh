@@ -87,7 +87,6 @@ int main(int argc, char **argv)
     "-Wall",
     "-Wextra",
     "-Wformat",
-    "-fsanitize=address",
     "-Wincompatible-pointer-types",
     "-I", LIB_FOLDER,
     "-I", CONFIG_FOLDER
