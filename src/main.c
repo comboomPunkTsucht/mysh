@@ -16,8 +16,6 @@
 #include "alexer.h"
 // Funktionsprototypen
 
-
-
 typedef enum
 {
   PUNCT_PLUS,
@@ -99,7 +97,8 @@ Alexer_ML_Comments ml_comments[] = {
     {"/*", "*/"},
 };
 
-typedef struct {
+typedef struct
+{
   char **items;
   size_t count;
   size_t capacity;
@@ -118,10 +117,11 @@ void handle_hello(void)
 
 void handle_help(void)
 {
-    printf("Available commands:\n");
-    for (size_t i = 0; i < sizeof(keywords) / sizeof(keywords[0]); ++i) {
-        printf("- %s\n", keywords[i]);
-    }
+  printf("Available commands:\n");
+  for (size_t i = 0; i < sizeof(keywords) / sizeof(keywords[0]); ++i)
+  {
+    printf("- %s\n", keywords[i]);
+  }
 }
 void handle_cd(char *args)
 {
@@ -174,10 +174,6 @@ void process_input(const char *line, const char *file_path)
     return;
 
   add_history(line);
-  Nob_Cmd cmd_extern = {0};                // Command extern (dynamic Array)
-  Cmd_external_args cmd_extern_args = {0}; // Command extern args (dynamic Array)
-  char *temp = strdup(line);               // copy of the line
-  char *token = strtok(temp, " ");
   Alexer l = alexer_create(file_path, line, strlen(line));
   l.puncts = puncts;
   l.puncts_count = ALEXER_ARRAY_LEN(puncts);
@@ -228,7 +224,6 @@ void process_input(const char *line, const char *file_path)
           handle_cd(NULL);
         }
         break;
-        break;
       case KEYWORD_ALIAS:
         break;
       case KEYWORD_UNALIAS:
@@ -252,7 +247,6 @@ void process_input(const char *line, const char *file_path)
           fprintf(stderr, "echo/print: missing argument\n");
         }
         break;
-
       case KEYWORD_PRINTLN:
         if (alexer_get_token(&l, &t))
         {
@@ -281,33 +275,30 @@ void process_input(const char *line, const char *file_path)
       // End of input
       return;
     default:
+      // 2. Für externe Kommandos
+      Nob_Cmd cmd_extern = {0};                // Command extern (dynamic Array)
+      Cmd_external_args cmd_extern_args = {0}; // Command extern args (dynamic Array)
+      char *temp = strdup(line);               // copy of the line
+      char *token = strtok(temp, " ");
       while (token != NULL)
       {
-        nob_da_append(&cmd_extern_args, strdup(token)); // Argument hinzufügen
+        // Append each token to the command
+        nob_da_append(&cmd_extern_args, strdup(token));
         token = strtok(NULL, " ");
       }
-      free(temp); // Kopie der Eingabe freigeben
-
-      // Null-Terminierung der Argumentliste
-      nob_da_append(&cmd_extern_args, NULL);
-
-      // Übergabe an execvp
+      free(temp); // Free the copy of the line
+      nob_da_foreach(const char **, token_ptr, &cmd_extern_args)
+      {
+        nob_cmd_append(&cmd_extern, *token_ptr); // Dereferenzieren des char**
+      }
+      nob_da_free(cmd_extern_args); // Free the command arguments
       if (!nob_cmd_run_sync_and_reset(&cmd_extern))
-      {
-        fprintf(stderr, "Unknown command: %s\n", line);
-      }
-
-      // Speicher freigeben
-      nob_da_foreach(char *, arg, &cmd_extern_args)
-      {
-        free(arg);
-      }
-      nob_da_free(cmd_extern_args);
-      return;
-    }
-    return;
+        printf("Unknown command: %s\n", line);
+      break;
     }
   }
+  return;
+}
 
 void usage(FILE *stream)
 {
@@ -323,7 +314,8 @@ void versionp(FILE *stream)
   fprintf(stream, "%s - %s\n", flag_program_name(), PROGRAMM_VERSION);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   char *help_discription = "Display this help message.";
   char *version_discription = "Print the version of mysh";
   bool *help = flag_bool("-help", false, help_discription);
@@ -331,7 +323,6 @@ int main(int argc, char **argv) {
   bool *version = flag_bool("-version", false, version_discription);
   bool *version2 = flag_bool("v", false, version_discription);
   Nob_String_Builder sb = {0};
-
 
   if (!flag_parse(argc, argv))
   {
@@ -355,41 +346,37 @@ int main(int argc, char **argv) {
   char **rest_argv = flag_rest_argv();
   NOB_UNUSED(rest_argv);
 
-
-
-    if (rest_argc <= 0)
+  if (rest_argc <= 0)
+  {
+    nob_sb_append_cstr(&sb, flag_program_name());
+    nob_sb_append_cstr(&sb, "> ");
+    while (!quit)
     {
-      nob_sb_append_cstr(&sb, flag_program_name());
-      nob_sb_append_cstr(&sb, "> ");
-      while (!quit)
+      char *line = readline(sb.items);
+      if (!line)
       {
-        char *line = readline(sb.items);
-        if (!line)
-        {
-          handle_exit();
-
-        }
-        process_input(line, NULL);
-        free(line);
+        handle_exit();
       }
-      nob_sb_free(sb);
-      handle_exit();
+      process_input(line, NULL);
+      free(line);
     }
-    else
+    nob_sb_free(sb);
+    handle_exit();
+  }
+  else
+  {
+    const char *file_path = rest_argv[0];
+
+    if (!nob_read_entire_file(file_path, &sb))
     {
-      const char *file_path = rest_argv[0];
-
-
-      if (!nob_read_entire_file(file_path, &sb))
-      {
-        nob_log(NOB_ERROR, "Fehler beim Lesen der Datei %s: %s\n", file_path, strerror(errno));
-        nob_sb_free(sb); // Sicherstellen, dass der Speicher freigegeben wird
-        return 1;        // Fehlercode zurückgeben
-      }
-      process_input(sb.items, file_path);
-      nob_sb_free(sb);
-      exit(0);
+      nob_log(NOB_ERROR, "Fehler beim Lesen der Datei %s: %s\n", file_path, strerror(errno));
+      nob_sb_free(sb); // Sicherstellen, dass der Speicher freigegeben wird
+      return 1;        // Fehlercode zurückgeben
     }
+    process_input(sb.items, file_path);
+    nob_sb_free(sb);
+    exit(0);
+  }
   NOB_UNREACHABLE("main");
   return 0;
 }
