@@ -177,6 +177,7 @@ void process_input(const char *line, const char *file_path)
   // 2. Für externe Kommandos
   Nob_Cmd cmd_extern = {0};                // Command extern (dynamic Array)
   char *temp = strdup(line);   // copy of the line
+  char *temp2 = strdup(line);   // copy of the line
   if (!temp)
   {
     nob_log(NOB_ERROR, "Memory allocation failed\n");
@@ -193,7 +194,7 @@ void process_input(const char *line, const char *file_path)
   }
   free(temp); // Free the copy of the line
 //----------------------------------------------------------------------------------------------
-  Alexer l = alexer_create(file_path, line, strlen(line));
+  Alexer l = alexer_create(file_path, temp2, strlen(temp2));
   l.puncts = puncts;
   l.puncts_count = ALEXER_ARRAY_LEN(puncts);
   l.keywords = keywords;
