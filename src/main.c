@@ -20,6 +20,84 @@ void handle_help(char **args);
 void handle_hello(char **args);
 void handle_cd(char **args);
 
+typedef enum
+{
+  PUNCT_PLUS,
+  PUNCT_MINUS,
+  PUNCT_MULT,
+  PUNCT_DEVIDE,
+  PUNCT_MOD,
+  PUNCT_EQUALS,
+  PUNCT_OPAREN,
+  PUNCT_CPAREN,
+  PUNCT_OCURLY,
+  PUNCT_CCURLY,
+  PUNCT_SEMICOLON,
+  COUNT_PUNCTS,
+} Punct_Index;
+
+static_assert(COUNT_PUNCTS == 11, "Amount of puncts have changed");
+const char *puncts[COUNT_PUNCTS] = {
+    [PUNCT_PLUS] = "+",
+    [PUNCT_MINUS] = "-",
+    [PUNCT_MULT] = "*",
+    [PUNCT_DEVIDE] = "/",
+    [PUNCT_MOD] = "%",
+    [PUNCT_OPAREN] = "(",
+    [PUNCT_CPAREN] = ")",
+    [PUNCT_OCURLY] = "{",
+    [PUNCT_CCURLY] = "}",
+    [PUNCT_EQUALS] = "==",
+    [PUNCT_SEMICOLON] = ";",
+};
+
+typedef enum
+{
+  KEYWORD_IF,
+  KEYWORD_RETURN,
+  KEYWORD_EXIT,
+  KEYWORD_QUIT,
+  KEYWORD_CD,
+  KEYWORD_HELP,
+  KEYWORD_HELLO,
+  KEYWORD_ALIAS,
+  KEYWORD_UNALIAS,
+  KEYWORD_ECHO,
+  KEYWORD_EXPORT,
+  KEYWORD_UNSET,
+  KEYWORD_SOURCE,
+  KEYWORD_PRINT,
+  KEYWORD_PRINTF,
+  COUNT_KEYWORDS,
+} Keyword_Index;
+
+static_assert(COUNT_KEYWORDS == 15, "Amount of keywords have changed");
+const char *keywords[COUNT_KEYWORDS] = {
+    [KEYWORD_IF] = "if",
+    [KEYWORD_RETURN] = "return",
+    [KEYWORD_EXIT] = "exit",
+    [KEYWORD_QUIT] = "quit",
+    [KEYWORD_CD] = "cd",
+    [KEYWORD_HELP] = "help",
+    [KEYWORD_HELLO] = "hello",
+    [KEYWORD_ALIAS] = "alias",
+    [KEYWORD_UNALIAS] = "unalias",
+    [KEYWORD_ECHO] = "echo",
+    [KEYWORD_EXPORT] = "export",
+    [KEYWORD_UNSET] = "unset",
+    [KEYWORD_SOURCE] = "source",
+    [KEYWORD_PRINT] = "print",
+    [KEYWORD_PRINTF] = "printf",
+};
+
+const char *sl_comments[] = {
+    "//",
+    "#",
+};
+
+Alexer_ML_Comments ml_comments[] = {
+    {"/*", "*/"},
+};
 struct cmd_entry
 {
   const char *name;
@@ -169,21 +247,22 @@ void versionp(FILE *stream)
   fprintf(stream, "%s - %s\n", flag_program_name(), PROGRAMM_VERSION);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char **argv) {
   char *help_discription = "Display this help message.";
   char *version_discription = "Print the version of mysh";
   bool *help = flag_bool("-help", false, help_discription);
   bool *help2 = flag_bool("h", false, help_discription);
   bool *version = flag_bool("-version", false, version_discription);
   bool *version2 = flag_bool("v", false, version_discription);
+  Nob_String_Builder sb = {0};
+
 
   if (!flag_parse(argc, argv))
   {
     usage(stderr);
     flag_print_error(stderr);
-    exit(1);
+    return 1;
   }
-
   if (*help || *help2)
   {
     usage(stdout);
@@ -201,19 +280,40 @@ int main(int argc, char *argv[]) {
   NOB_UNUSED(rest_argv);
 
 
-  if (rest_argc <= 0)
-  {
-    while (!quit)
-    {
-      char *line = readline(PROGRAMM_NAME"> ");
-      if (!line)
-        handle_exit(NULL);
-      process_input(line);
-      free(line);
-    }
 
-    handle_exit(NULL);
-  }
+    if (rest_argc <= 0)
+    {
+      nob_sb_append_cstr(&sb, flag_program_name());
+      nob_sb_append_cstr(&sb, "> ");
+      while (!quit)
+      {
+        char *line = readline(sb.items);
+        if (!line)
+        {
+          handle_exit(NULL);
+
+        }
+        process_input(line);
+        free(line);
+      }
+      nob_sb_free(sb);
+      handle_exit(NULL);
+    }
+    else
+    {
+      const char *file_path = rest_argv[0];
+
+
+      if (!nob_read_entire_file(file_path, &sb))
+      {
+        nob_log(NOB_ERROR, "Fehler beim Lesen der Datei %s: %s\n", file_path, strerror(errno));
+        nob_sb_free(sb); // Sicherstellen, dass der Speicher freigegeben wird
+        return 1;        // Fehlercode zurückgeben
+      }
+      printf("Dateiinhalt:\n%s\n", sb.items);
+      nob_sb_free(sb);
+      handle_exit(NULL);
+    }
   NOB_UNREACHABLE("main");
   return 0;
 }
