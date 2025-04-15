@@ -1,0 +1,54 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"editor.tabSize": 2,
+		"makefile.extensionOutputFolder": "./build/.vscode"
+	},
+	"extensions": {
+		"recommendations": [
+			"vadimcn.vscode-lldb",
+			"rust-lang.rust-analyzer",
+			"xuangeaha.just-print-it",
+			"wof.vscode-easy-print",
+			"discretegames.f5anything"
+		]
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Rust Debug",
+				"type": "lldb",
+				"request": "launch",
+				"program": "${workspaceFolder}/target/debug/mysh",
+				"args": [],
+				"cwd": "${workspaceFolder}",
+				"env": {
+					"CARGO_TARGET_DIR": "${workspaceFolder}/target"
+				}
+			},
+			{
+				"name": "Build (Debug)",
+				"type": "f5anything",
+				"request": "launch",
+				"command": "cargo build --target-dir ${workspaceFolder}/target",
+			},
+			{
+				"name": "Build (Release)",
+				"type": "f5anything",
+				"request": "launch",
+				"command": "cargo build --release --target-dir ${workspaceFolder}/target",
+			},
+			{
+				"name": "open Docs",
+				"type": "f5anything",
+				"request": "launch",
+				"command": "cargo doc --open --target-dir ${workspaceFolder}/target",
+			}
+		]
+	}
+}
