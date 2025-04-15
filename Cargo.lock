@@ -2713,6 +2713,7 @@ dependencies = [
  "paste",
  "serde",
  "strum",
+ "time",
  "unicode-segmentation",
  "unicode-truncate",
  "unicode-width 0.2.0",
