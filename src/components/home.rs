@@ -42,7 +42,7 @@ impl Component for Home {
     }
 
     fn draw(&mut self, frame: &mut Frame, area: Rect) -> Result<()> {
-        frame.render_widget(Paragraph::new("hello world"), area);
+        frame.render_widget(Paragraph::new("hello world").style(Style::new().bold().white()).block(Block::bordered().border_type(BorderType::Rounded).style(Style::new().green()).title("hi").title_style(Style::new().white().bold().italic())), area);
         Ok(())
     }
 }

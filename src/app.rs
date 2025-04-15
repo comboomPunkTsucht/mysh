@@ -7,7 +7,7 @@ use tracing::{debug, info};
 
 use crate::{
     action::Action,
-    components::{Component, fps::FpsCounter, home::Home, mysplash::MySplash},
+    components::{Component, fps::FpsCounter, home::Home},
     config::Config,
     tui::{Event, Tui},
 };
@@ -37,7 +37,7 @@ impl App {
         Ok(Self {
             tick_rate,
             frame_rate,
-            components: vec![Box::new(MySplash::new()),Box::new(Home::new()), Box::new(FpsCounter::default())],
+            components: vec![Box::new(Home::new()), Box::new(FpsCounter::default())],
             should_quit: false,
             should_suspend: false,
             config: Config::new()?,
@@ -50,9 +50,10 @@ impl App {
 
     pub async fn run(&mut self) -> Result<()> {
         let mut tui = Tui::new()?
-            // .mouse(true) // uncomment this line to enable mouse support
+            .mouse(true) // uncomment this line to enable mouse support
             .tick_rate(self.tick_rate)
             .frame_rate(self.frame_rate);
+
         tui.enter()?;
 
         for component in self.components.iter_mut() {
