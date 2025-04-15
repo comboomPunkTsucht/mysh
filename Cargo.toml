@@ -4,6 +4,7 @@ version = "0.1.2-alpha"
 edition = "2024"
 
 [dependencies]
+crossterm = "0.29.0"
 flagset = "0.4.7"
 ratatui = { version = "0.29.0", features = ["all-widgets"] }
 tui-textarea = "0.7.0"
