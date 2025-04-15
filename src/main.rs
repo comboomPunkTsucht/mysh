@@ -1,36 +1,25 @@
-use ratatui::{widgets::Paragraph, Frame};
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
+use clap::Parser;
+use cli::Cli;
+use color_eyre::Result;
 
-fn handle_events() -> std::io::Result<bool> {
-    match event::read()? {
-        Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
-            KeyCode::Char('q') => return Ok(true),
-            // handle other key events
-            _ => {}
-        },
-        // handle other events
-        _ => {}
-    }
-    Ok(false)
-}
+use crate::app::App;
 
-fn run(terminal: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
-    loop {
-        terminal.draw(|frame| draw(frame))?;
-        if handle_events()? {
-            break Ok(());
-        }
-    }
-}
+mod action;
+mod app;
+mod cli;
+mod components;
+mod config;
+mod errors;
+mod logging;
+mod tui;
 
-fn draw(frame: &mut Frame) {
-    let text = Paragraph::new("Hello World!");
-    frame.render_widget(text, frame.area());
-}
+#[tokio::main]
+async fn main() -> Result<()> {
+    crate::errors::init()?;
+    crate::logging::init()?;
 
-fn main() -> std::io::Result<()> {
-    let mut terminal = ratatui::init();
-    let result = run(&mut terminal);
-    ratatui::restore();
-    result
+    let args = Cli::parse();
+    let mut app = App::new(args.tick_rate, args.frame_rate)?;
+    app.run().await?;
+    Ok(())
 }
