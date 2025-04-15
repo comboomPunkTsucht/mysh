@@ -11,12 +11,12 @@ use super::Component;
 use crate::{action::Action, config::Config};
 
 #[derive(Default)]
-pub struct Splash {
+pub struct MySplash {
     command_tx: Option<UnboundedSender<Action>>,
     config: Config,
 }
 
-impl Splash {
+impl MySplash {
     pub fn new() -> Self {
         Self::default()
     }
@@ -29,7 +29,7 @@ static SPLASH_CONFIG: SplashConfig = SplashConfig {
     use_colors: true,
 };
 
-impl Component for Splash {
+impl Component for MySplash {
     fn register_action_handler(&mut self, tx: UnboundedSender<Action>) -> Result<()> {
         self.command_tx = Some(tx);
         Ok(())
