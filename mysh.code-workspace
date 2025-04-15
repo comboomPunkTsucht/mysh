@@ -6,7 +6,7 @@
 	],
 	"settings": {
 		"editor.tabSize": 2,
-		"makefile.extensionOutputFolder": "./build/.vscode"
+		"makefile.extensionOutputFolder": "${workspaceFolder}/target//.vscode"
 	},
 	"extensions": {
 		"recommendations": [
